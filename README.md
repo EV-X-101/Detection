@@ -70,8 +70,8 @@ To exit the script, press the 'q' key.
 
 Here are some example output images from the script:
 
-- Object detection: ![Object Detection Example](images/detection1.png) 🕵️‍♀️
-- Depth estimation: ![Depth Estimation Example](images/depth1.png) 📏
+- Object detection: ![Object Detection Example](images/depth1.png) 🕵️‍♀️
+- Depth estimation: ![Depth Estimation Example](images/detection1.png) 📏
 
 ## Credits 🙏
 
