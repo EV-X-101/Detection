@@ -40,8 +40,6 @@ while True:
     for item in detected_info:
         x_min, y_min, x_max, y_max, confidence, class_idx = item
         class_name = results.names[int(class_idx)]
-        print(f"Class: {class_name}, Confidence: {confidence:.2f}")
-        print(f"Bounding Box: [{x_min}, {y_min}, {x_max}, {y_max}]")
         
         # Estimate the distance using stereo vision formula
         xl = x_min
@@ -50,13 +48,16 @@ while True:
         yr = y_max
         d = abs(xl - xr)
         depth = (b * f) / d
-        print(f"Distance: {depth:.2f} meters")
-
-    # Render the results on the frame
-    frame_with_results = results.render()[0]
+        
+        # Display the object name and estimated depth
+        text = f"{class_name} {depth:.2f}m"
+        cv2.rectangle(frame, (int(x_min), int(y_min)), (int(x_max), int(y_max)), (255, 0, 0), 2)
+        cv2.putText(frame, text, (int(x_min), int(y_min) - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 0, 0), 2)
+        print(f"Detected: {text}")
+        
 
     # Display the frame with detected objects
-    cv2.imshow('YOLOv5 Object Detection', frame_with_results)
+    cv2.imshow('YOLOv5 Object Detection', frame)
 
     # Press 'q' to exit the loop and close the camera feed
     if cv2.waitKey(1) & 0xFF == ord('q'):
