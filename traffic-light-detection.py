@@ -36,8 +36,6 @@ while True:
     for item in detected_info:
         x_min, y_min, x_max, y_max, confidence, class_idx = item
         class_name = results.names[int(class_idx)]
-        print(f"Class: {class_name}, Confidence: {confidence:.2f}")
-        print(f"Bounding Box: [{x_min}, {y_min}, {x_max}, {y_max}]")
 
         # Extract the region of interest (ROI) around the object
         roi = frame[int(y_min):int(y_max), int(x_min):int(x_max)]
@@ -47,10 +45,36 @@ while True:
         distance = 1 / depth
 
         # Print the estimated distance to the object
-        print(f"Estimated Distance: {distance:.2f} meters")
+        print(f"Class: {class_name}, Estimated Distance: {distance:.2f} meters")
 
         # Render the distance information on the frame
-        cv2.putText(frame, f"Distance: {distance:.2f} m", (int(x_min), int(y_min) - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+        cv2.putText(frame, f"Distance: {distance:.2f} m", (int(x_min), int(y_min) - 10), cv2.FONT_HERSHEY_SIMPLEX,
+                    0.5, (0, 255, 0), 2)
+
+        # Check if the object is a traffic light
+        if class_name == 'traffic light':
+            # Extract the region of interest (ROI) for the traffic light
+            traffic_light_roi = frame[int(y_min):int(y_max), int(x_min):int(x_max)]
+
+            # Convert the ROI to HSV color space
+            hsv_roi = cv2.cvtColor(traffic_light_roi, cv2.COLOR_BGR2HSV)
+
+            # Threshold the image to extract the color of the traffic light
+            lower_red = np.array([0, 100, 100])
+            upper_red = np.array([10, 255, 255])
+            mask1 = cv2.inRange(hsv_roi, lower_red, upper_red)
+
+            lower_red = np.array([170, 100, 100])
+            upper_red = np.array([180, 255, 255])
+            mask2 = cv2.inRange(hsv_roi, lower_red, upper_red)
+
+            mask = mask1 + mask2
+            color = 'red' if cv2.countNonZero(mask) > 0 else 'green'
+
+            # Render the traffic light color on the frame
+            cv2.rectangle(frame, (int(x_min), int(y_min)), (int(x_max), int(y_max)), (0, 0, 255), 2)
+            cv2.putText(frame, f"Color: {color}", (int(x_min), int(y_min) + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5,
+                        (0, 0, 255), 2)
 
     # Render the results on the frame
     frame_with_results = results.render()[0]
@@ -65,3 +89,4 @@ while True:
 # Release the camera and close all OpenCV windows
 cap.release()
 cv2.destroyAllWindows()
+
