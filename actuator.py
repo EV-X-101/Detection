@@ -56,7 +56,7 @@ def speed(duty_cycle):
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 sock.bind(('0.0.0.0', 5000))
 sock.listen()
-
+print('Socket connection established')
 # Main program loop
 while True:
     conn, addr = sock.accept()

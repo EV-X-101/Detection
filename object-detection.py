@@ -29,7 +29,7 @@ if not cap.isOpened():
 # Set up socket connection
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 sock.connect(('RASPBERRY_PI_IP_ADDRESS', 5000)) # Replace with Raspberry Pi IP address
-
+print('Socket connection established')
 # Loop to continuously capture frames from the camera
 while True:
     ret, frame = cap.read()

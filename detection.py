@@ -1,5 +1,9 @@
 import cv2
 import torch
+import os
+
+# Get the IP address from the environment variable
+RPI_IP_ADDRESS = os.environ.get('RPI_IP_ADDRESS')
 
 # Load a pre-trained YOLOv5 model (e.g., YOLOv5s)
 model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
