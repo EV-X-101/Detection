@@ -73,6 +73,56 @@ Here are some example output images from the script:
 - Object detection: ![Object Detection Example](images/depth1.png) 🕵️‍♀️
 - Depth estimation: ![Depth Estimation Example](images/detection1.png) 📏
 
+
+# 🚀 RC Car Object Detection and Obstacle Avoidance
+
+This project demonstrates how to use object detection and stereo vision to enable obstacle avoidance on an RC car. The car is equipped with a camera and two motors controlled by a Raspberry Pi. The camera captures images that are analyzed by a deep learning model (YOLOv5) running on a PC. The model detects objects in the scene and estimates their distance using stereo vision. If a potential obstacle (e.g., person, car, motorcycle, bicycle) is detected, a command is sent to the Raspberry Pi to stop the car.
+
+## 📝 Requirements
+
+- Python 3
+- PyTorch (>=1.7.0)
+- OpenCV-Python (>=4.4.0)
+- Raspberry Pi with Raspbian OS
+- Two DC motors with wheels and a motor driver (e.g., L298N)
+- Camera (e.g., USB webcam)
+- Jumper wires and breadboard
+
+## 🛠️ Hardware Setup
+
+1. Connect the motors to the motor driver (L298N) following the wiring diagram in the `motor_control` folder. Connect the motor driver to the Raspberry Pi using jumper wires.
+
+2. Connect the camera to the Raspberry Pi using a USB cable.
+
+3. Place the motors and the camera on the RC car chassis and connect them to the power source (e.g., batteries).
+
+## 📊 Software Setup
+
+1. Clone this repository to your PC and Raspberry Pi.
+
+2. Install the required libraries listed above using pip.
+
+3. Upload the `motor_control.py` script to the Raspberry Pi and run it.
+
+4. Modify the IP address in the `object_detection.py` script to match the IP address of your Raspberry Pi. Upload the modified script to your PC and run it.
+
+5. Place the RC car on a flat surface with no obstacles and start the `object_detection.py` script on your PC. The car should move forward.
+
+6. Test the obstacle avoidance by placing a potential obstacle (e.g., person, car, motorcycle, bicycle) in front of the car. The car should stop.
+
+## 📝 License
+
+This project is licensed under the MIT License. See the `LICENSE` file for details.
+
+## 🤝 Acknowledgments
+
+- YOLOv5: https://github.com/ultralytics/yolov5
+- PyTorch: https://pytorch.org/
+- OpenCV: https://opencv.org/
+- Raspberry Pi: https://www.raspberrypi.org/
+- Adafruit: https://learn.adafruit.com/
+
+
 ## Credits 🙏
 
 This code is based on the YOLOv5 object detection tutorial by Ultralytics: https://github.com/ultralytics/yolov5
