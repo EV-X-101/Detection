@@ -2,7 +2,10 @@ import cv2
 import numpy as np
 import torch
 import socket
+import os
 
+# Get the IP address from the environment variable
+RPI_IP_ADDRESS = os.environ.get('RPI_IP_ADDRESS')
 # Load a pre-trained YOLOv5 model (e.g., YOLOv5s)
 model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
 
@@ -28,7 +31,7 @@ if not cap.isOpened():
 
 # Set up socket connection
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-sock.connect(('RASPBERRY_PI_IP_ADDRESS', 5000)) # Replace with Raspberry Pi IP address
+sock.connect((RPI_IP_ADDRESS, 5000)) # Replace with Raspberry Pi IP address
 print('Socket connection established')
 # Loop to continuously capture frames from the camera
 while True:
@@ -42,8 +45,8 @@ while True:
     detected_info = results.xyxy[0].cpu().numpy()
 
     # Check if an obstacle is detected and send signal to Raspberry Pi
-    threat_classes = ['person', 'car', 'truck', 'bus'] # Replace with the classes you want to detect
-    threat_distances = {'person': 1.0, 'car': 3.0, 'truck': 5.0, 'bus': 8.0} # Replace with the distances you want to detect each class at
+    threat_classes = ['person', 'car', 'truck', 'bus', 'chair'] # Replace with the classes you want to detect
+    threat_distances = {'person': 1.0, 'car': 3.0, 'truck': 5.0, 'bus': 8.0, 'chair': 0.8} # Replace with the distances you want to detect each class at
     obstacle_detected = False
     for item in detected_info:
         x_min, y_min, x_max, y_max, confidence, class_idx = item
