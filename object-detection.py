@@ -86,27 +86,49 @@ while True:
             hsv_roi = cv2.cvtColor(traffic_light_roi, cv2.COLOR_BGR2HSV)
 
             # Threshold the image to extract the color of the traffic light
-            lower_red = np.array([0, 100, 100])
-            upper_red = np.array([10, 255, 255])
-            mask1 = cv2.inRange(hsv_roi, lower_red, upper_red)
+            lower_red1 = np.array([0, 100, 100])
+            upper_red1 = np.array([10, 255, 255])
+            mask1 = cv2.inRange(hsv_roi, lower_red1, upper_red1)
 
-            lower_red = np.array([170, 100, 100])
-            upper_red = np.array([180, 255, 255])
-            mask2 = cv2.inRange(hsv_roi, lower_red, upper_red)
+            lower_red2 = np.array([170, 100, 100])
+            upper_red2 = np.array([180, 255, 255])
+            mask2 = cv2.inRange(hsv_roi, lower_red2, upper_red2)
 
-            mask = mask1 + mask2
-            color = 'red' if cv2.countNonZero(mask) > 0 else 'green'
+            lower_yellow = np.array([20, 100, 100])
+            upper_yellow = np.array([30, 255, 255])
+            mask3 = cv2.inRange(hsv_roi, lower_yellow, upper_yellow)
+
+            lower_green = np.array([60, 100, 100])
+            upper_green = np.array([80, 255, 255])
+            mask4 = cv2.inRange(hsv_roi, lower_green, upper_green)
+
+            # Combine the masks to detect multiple colors at once
+            mask = mask1 + mask2 + mask3 + mask4
+
+            # Classify the traffic light color
+            if cv2.countNonZero(mask) > 0:
+                if cv2.countNonZero(mask1) > 0 and cv2.countNonZero(mask2) > 0:
+                    color = 'red+yellow'
+                elif cv2.countNonZero(mask1) > 0:
+                    color = 'red'
+                elif cv2.countNonZero(mask2) > 0:
+                    color = 'red'
+                elif cv2.countNonZero(mask3) > 0:
+                    color = 'yellow'
+                elif cv2.countNonZero(mask4) > 0:
+                    color = 'green'
+                elif cv2.countNonZero(mask1 + mask3) > 0:
+                    color = 'red+yellow'
+                elif cv2.countNonZero(mask3 + mask4) > 0:
+                    color = 'green+yellow'
+            else:
+                color = 'unknown'
 
             # Render the traffic light color on the frame
             cv2.rectangle(frame, (int(x_min), int(y_min)), (int(x_max), int(y_max)), (0, 0, 255), 2)
             cv2.putText(frame, f"Color: {color}", (int(x_min), int(y_min) + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5,
                         (0, 0, 255), 2)
 
-            # Check if the traffic light is red and send signal to Raspberry Pi to stop the car
-            if color == 'red':
-                print("Red traffic light detected. Stopping car.")
-                sock.sendall(b'stop')
-                obstacle_detected = True
 
     # Send signal to Raspberry Pi to move car forward if no obstacle or red traffic light is detected
     if not obstacle_detected:
