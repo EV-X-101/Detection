@@ -9,9 +9,6 @@ RPI_IP_ADDRESS = os.environ.get('RPI_IP_ADDRESS')
 # Load a pre-trained YOLOv5 model (e.g., YOLOv5s)
 model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
 
-# Load a pre-trained depth estimation model (MiDaS v2.1 Large)
-midas_model = torch.hub.load('intel-isl/MiDaS', 'MiDaS_v2.1_large', pretrained=True)
-
 # Define camera calibration matrix and distortion coefficients
 K = np.array([[5.9421434211923245e+02, 0., 3.1950000000000000e+02],
               [0., 5.9421434211923245e+02, 2.3950000000000000e+02],
@@ -71,7 +68,6 @@ def traffic_light_state(frame, bbox):
     color_counts.sort(key=lambda x: x[1], reverse=True)
     return color_counts[0][0]
 
-
 # Open a connection to the camera (camera index 0 by default)
 cap = cv2.VideoCapture(0)
 
@@ -83,8 +79,7 @@ if not cap.isOpened():
 # Set up socket connection
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 sock.connect((RPI_IP_ADDRESS, 5000)) # Replace with Raspberry Pi IP address
-print('\b\b\b--- Socket connection established ----')
-
+print('Socket connection established')
 # Loop to continuously capture frames from the camera
 while True:
     ret, frame = cap.read()
@@ -92,34 +87,35 @@ while True:
         print("Error: Could not read frame.")
         break
 
-    # Perform object detection on the captured frame
+    # Perform inference on the captured frame
     results = model(frame)
     detected_info = results.xyxy[0].cpu().numpy()
 
     # Check if an obstacle is detected and send signal to Raspberry Pi
     threat_classes = ['person', 'car', 'truck', 'bus', 'chair'] # Replace with the classes you want to detect
-    threat_distances = {'person': 1.0, 'car': 3.0, 'truck': 5.0, 'bus': 8.0, 'chair': 0.8} # Replace with the distances you want to detect each class at
+    threat_distances = {'person': 0.5, 'car': 3.0, 'truck': 5.0, 'bus': 8.0, 'chair': 0.6} # Replace with the distances you want to detect each class at
     obstacle_detected = False
     for item in detected_info:
         x_min, y_min, x_max, y_max, confidence, class_idx = item
         class_name = results.names[int(class_idx)]
         
-        # Extract the region of interest (ROI) around the object
-        roi = frame[int(y_min):int(y_max), int(x_min):int(x_max)]
-
-        # Estimate the distance to the object using the depth estimation model
-        depth = midas_model(roi).mean()
-        distance = 1 / depth
-
-        # Display the object name and estimated distance
-        text = f"{class_name} {distance:.2f}m"
+        # Estimate the distance using stereo vision formula
+        xl = x_min
+        yl = y_min
+        xr = x_max
+        yr = y_max
+        d = abs(xl - xr)
+        depth = (b * f) / d
+        
+        # Display the object name and estimated depth
+        text = f"{class_name} {depth:.2f}m"
         cv2.rectangle(frame, (int(x_min), int(y_min)), (int(x_max), int(y_max)), (255, 0, 0), 2)
         cv2.putText(frame, text, (int(x_min), int(y_min) - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 0, 0), 2)
         print(f"Detected: {text}")
-
+        
         # Check if an obstacle is detected and send signal to Raspberry Pi
         for threat_class in threat_classes:
-            if class_name == threat_class and distance < threat_distances[threat_class]:
+            if class_name == threat_class and depth < threat_distances[threat_class]:
                 obstacle_detected = True
                 print(f"{threat_class.capitalize()} detected. Stopping car.")
                 sock.sendall(b'stop')
@@ -143,9 +139,9 @@ while True:
                 print(f"Traffic light is {traffic_light_color}. Stopping car.")
                 sock.sendall(b'stop')
 
-    # Send signal to Raspberry Pi to move car forward if no obstacle or red traffic light is detected
+    # Send signal to Raspberry Pi to move car forward if no obstacle is detected
     if not obstacle_detected:
-        print("No obstacle or red traffic light detected. Moving car forward.")
+        print("No obstacle detected. Moving car forward.")
         sock.sendall(b'forward')
 
     # Display the frame with detected objects
