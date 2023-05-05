@@ -31,9 +31,16 @@ yellow_upper_range = np.array([30, 255, 255])
 green_lower_range = np.array([40, 70, 70])
 green_upper_range = np.array([90, 255, 255])
 
-# Set initial traffic light color to None
+# Set initial traffic light color to None and previous traffic light color to None
 traffic_light_color = None
 prev_traffic_light_color = None
+
+# Set counters for consecutive red and green frames
+consecutive_red_frames = 0
+consecutive_green_frames = 0
+
+# Set minimum threshold for consecutive red and green frames
+min_consecutive_frames = 5
 
 # Loop to continuously capture frames from the camera
 while True:
@@ -77,16 +84,26 @@ while True:
 
             # Determine the color of the traffic light
             if cv2.countNonZero(red_mask) > 10:
-                traffic_light_color = 'red'
+                consecutive_red_frames += 1
+                consecutive_green_frames = 0
             elif cv2.countNonZero(yellow_mask) > 10:
+                consecutive_red_frames = 0
+                consecutive_green_frames = 0
                 traffic_light_color = 'yellow'
             elif cv2.countNonZero(green_mask) > 10:
-                traffic_light_color = 'green'
+                consecutive_red_frames = 0
+                consecutive_green_frames += 1
             else:
-                traffic_light_color = None
+                consecutive_red_frames = 0
+                consecutive_green_frames = 0
 
             # If the traffic light color has changed, print the new color
-            if traffic_light_color is not None and traffic_light_color != prev_traffic_light_color:
+            if consecutive_red_frames >= min_consecutive_frames and traffic_light_color != 'red':
+                traffic_light_color = 'red'
+                print(f"Traffic Light: {traffic_light_color}")
+                prev_traffic_light_color = traffic_light_color
+            elif consecutive_green_frames >= min_consecutive_frames and traffic_light_color != 'green':
+                traffic_light_color = 'green'
                 print(f"Traffic Light: {traffic_light_color}")
                 prev_traffic_light_color = traffic_light_color
 
