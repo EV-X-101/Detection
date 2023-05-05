@@ -61,10 +61,10 @@ def traffic_light_state(frame, bbox):
 
     # If yellow pixels are detected, prioritize yellow color
     if yellow_count > 10:
-        return "Yellow"
+        return "yellow"
 
     # Determine the traffic light state based on the number of colored pixels
-    color_counts = [("Red", red_count), ("Green", green_count)]
+    color_counts = [("red", red_count), ("green", green_count)]
     color_counts.sort(key=lambda x: x[1], reverse=True)
     return color_counts[0][0]
 

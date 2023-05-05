@@ -26,8 +26,8 @@ GPIO.setup(en2,GPIO.OUT)
 # Set up PWM
 p1 = GPIO.PWM(en1,100000)
 p2 = GPIO.PWM(en2,100000)
-p1.start(25)
-p2.start(25)
+p1.start(0) # Set duty cycle to 0 by default
+p2.start(0) # Set duty cycle to 0 by default
 
 # Define motor control functions
 def forward():
@@ -35,6 +35,8 @@ def forward():
     GPIO.output(in2,GPIO.LOW)
     GPIO.output(in3,GPIO.HIGH)
     GPIO.output(in4,GPIO.LOW)
+    p1.ChangeDutyCycle(25) # Set duty cycle to 25 to move the car forward
+    p2.ChangeDutyCycle(25) # Set duty cycle to 25 to move the car forward
 
 def backward():
     GPIO.output(in1,GPIO.LOW)
@@ -47,6 +49,8 @@ def stop():
     GPIO.output(in2,GPIO.LOW)
     GPIO.output(in3,GPIO.LOW)
     GPIO.output(in4,GPIO.LOW)
+    p1.ChangeDutyCycle(0) # Set duty cycle to 0 to stop the car
+    p2.ChangeDutyCycle(0) # Set duty cycle to 0 to stop the car
 
 def speed(duty_cycle):
     p1.ChangeDutyCycle(duty_cycle)
@@ -56,7 +60,8 @@ def speed(duty_cycle):
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 sock.bind(('0.0.0.0', 5000))
 sock.listen()
-print('Socket connection established')
+print('Socket connection established.')
+
 # Main program loop
 while True:
     conn, addr = sock.accept()
