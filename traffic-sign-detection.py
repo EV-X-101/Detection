@@ -6,8 +6,13 @@ import os
 
 # Get the IP address from the environment variable
 RPI_IP_ADDRESS = os.environ.get('RPI_IP_ADDRESS')
-# Load a pre-trained YOLOv5 model (e.g., YOLOv5s)
+# Load a pre-trained YOLOv5 model 
 model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
+
+# Load a pre-trained traffic sign detection Model
+traffic_sign_model = torch.load('models/traffic_sign_detection.pt')
+# Making it on Eval mode
+traffic_sign_model[0].eval()
 
 # Define camera calibration matrix and distortion coefficients
 K = np.array([[5.9421434211923245e+02, 0., 3.1950000000000000e+02],
@@ -91,6 +96,10 @@ while True:
     results = model(frame)
     detected_info = results.xyxy[0].cpu().numpy()
 
+    # Perform inference on the captured frame with your custom traffic sign model
+    with torch.no_grad():
+        traffic_sign_results = traffic_sign_model(torch.from_numpy(frame).unsqueeze(0))
+
     # Check if an obstacle is detected and send signal to Raspberry Pi
     threat_classes = ['person', 'car', 'truck', 'bus'] # Replace with the classes you want to detect
     threat_distances = {'person': 0.5, 'car': 3.0, 'truck': 5.0, 'bus': 8.0} # Replace with the distances you want to detect each class at
@@ -138,6 +147,30 @@ while True:
                 obstacle_detected = True
                 print(f"Traffic light is {traffic_light_color}. Stopping car.")
                 sock.sendall(b'stop')
+    
+    # Check if a traffic sign is detected and handle it
+    for item in traffic_sign_results:
+        x_min, y_min, x_max, y_max, confidence, class_idx = item
+        class_name = results.names[int(class_idx)]
+
+        # Render the bounding box and class name for the detected traffic sign
+        cv2.rectangle(frame, (int(x_min), int(y_min)), (int(x_max), int(y_max)), (0, 255, 0), 2)
+        cv2.putText(frame, class_name, (int(x_min), int(y_min) - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
+
+        # Handle detected traffic signs
+        if class_name == 'stop':
+            obstacle_detected = True
+            print(f"Stop sign detected. Stopping car.")
+            sock.sendall(b'stop')
+        elif class_name == 'speed limit':
+            # Handle speed limit sign...
+            pass
+        elif class_name == 'yield':
+            # Handle yield sign...
+            pass
+        elif class_name == 'no entry':
+            # Handle no entry sign...
+            pass
 
     # Send signal to Raspberry Pi to move car forward if no obstacle is detected
     if not obstacle_detected:
