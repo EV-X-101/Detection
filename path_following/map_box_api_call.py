@@ -8,7 +8,7 @@ load_dotenv()
 
 # Retrieve the Mapbox API key from the environment variable
 api_key = os.getenv('MAPBOX_API_KEY')
-
+print(api_key)
 # Set the destination coordinates
 destination = '8.557840,39.287434'  # Example: New York, NY
 
