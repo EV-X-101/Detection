@@ -52,7 +52,7 @@ def traffic_light_state(frame, bbox):
 
 # Set up socket connection
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-sock.connect(('replace_with_your_ip', 5000)) # Replace with Raspberry Pi IP address
+sock.connect(('RPI_ADDRESS', 5000)) # Replace with Raspberry Pi IP address
 print('Socket connection established')
 
 # Open a connection to the camera (camera index 0 by default)
