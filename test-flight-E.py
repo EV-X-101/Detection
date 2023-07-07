@@ -137,7 +137,7 @@ while True:
             if traffic_light_color == 'red' or traffic_light_color == 'yellow':
                 obstacle_detected = True
                 print(f"Traffic light is {traffic_light_color}. Stopping car.")
-                sock.sendall(b'stop')
+                sock.sendall(b'stop t')
 
     # Send signal to Raspberry Pi to move car forward if no obstacle is detected
     if not obstacle_detected:
